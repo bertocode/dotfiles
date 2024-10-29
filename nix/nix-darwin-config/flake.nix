@@ -63,6 +63,7 @@
               discord
 	      stow
 	      obsidian
+              rbenv
             ];
 
             services.nix-daemon.enable = true;
