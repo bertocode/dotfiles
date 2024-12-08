@@ -1,6 +1,8 @@
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+local rbenv_path = os.getenv("HOME") .. "/.rbenv/shims"
+vim.env.PATH = rbenv_path .. ":" .. vim.env.PATH
 vim.g.have_nerd_font = false
 -- NOTE: You can change these options as you wish! For more options, you can see `:help option-list`
 vim.opt.number = true
@@ -23,6 +25,7 @@ vim.opt.inccommand = "split"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
+vim.cmd("language en_US")
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping or just use <C-\><C-n> to exit terminal mode
@@ -429,6 +432,10 @@ require("lazy").setup({
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
+				ruby = {
+					{ "rubocop" }, -- First, auto-correct with RuboCop
+					{ "prettier" }, -- Follow with Prettier (with Ruby plugin installed) or any other formatter
+				},
 				-- Conform can also run multiple formatters sequentially
 				-- python = { "isort", "black" },
 				--
@@ -691,6 +698,7 @@ require("lazy").setup({
 				"c",
 				"diff",
 				"html",
+				"git_config",
 				"lua",
 				"luadoc",
 				"markdown",
@@ -712,19 +720,16 @@ require("lazy").setup({
 			indent = { enable = true, disable = { "ruby" } },
 		},
 		config = function(_, opts)
-			-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
-			-- Prefer git instead of curl in order to improve connectivity in some environments
+			-- Configure Treesitter
 			require("nvim-treesitter.install").prefer_git = true
-			---@diagnostic disable-next-line: missing-fields
 			require("nvim-treesitter.configs").setup(opts)
 
-			-- There are additional nvim-treesitter modules that you can use to interact
-			-- with nvim-treesitter. You should go explore a few and see what interests you:
-			--
-			--    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-			--    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-			--    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "gitcommit",
+				callback = function()
+					vim.bo.filetype = "git_config"
+				end,
+			})
 		end,
 	},
 	-- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the

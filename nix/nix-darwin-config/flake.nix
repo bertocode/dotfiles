@@ -31,17 +31,6 @@
     home = "/Users/berto";
  pkgs = import nixpkgs {
       inherit system;
-      overlays = [
-        (self: super: {
-          sqlite = super.sqlite.overrideAttrs (old: {
-            version = "3.34.0";
-            src = super.fetchurl {
-              url = "https://www.sqlite.org/2020/sqlite-autoconf-3340000.tar.gz";
-              sha256 = "0xw9w4kcj65f85i7r9z1l9k0axjklgj8wvb4gnz5mf3j9lnhr1ib";
-            };
-          });
-        })
-      ];
       config.allowUnfree = true;
     };
   in {
@@ -78,7 +67,6 @@
               discord
 	      stow
               ripgrep
-              sqlite
             ];
 
             services.nix-daemon.enable = true;
@@ -101,6 +89,7 @@
 	    };
             brews = [
               "libpq"
+              "geos"
             ];
 	    casks = [
 	      "bitwarden"
