@@ -23,9 +23,13 @@
       url = "github:homebrew/homebrew-bundle";
       flake = false;
     };
+    homebrew-services = {
+      url = "github:homebrew/homebrew-services";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, nix-darwin, nix-homebrew, homebrew-core, homebrew-cask, homebrew-bundle, ... }:
+  outputs = { self, nixpkgs, nix-darwin, nix-homebrew, homebrew-core, homebrew-cask, homebrew-bundle, homebrew-services, ... }:
   let
     system = "aarch64-darwin";  
     home = "/Users/berto";
@@ -35,7 +39,7 @@
     };
   in {
     darwinConfigurations = {
-      berto = nix-darwin.lib.darwinSystem {
+      Bertos-MacBook-Pro = nix-darwin.lib.darwinSystem {
         inherit system;
         modules = [
           nix-homebrew.darwinModules.nix-homebrew
@@ -50,8 +54,9 @@
                 "homebrew/homebrew-core" = homebrew-core;
                 "homebrew/homebrew-cask" = homebrew-cask;
                 "homebrew/homebrew-bundle" = homebrew-bundle;
+                "homebrew/homebrew-services" = homebrew-services;
               };
-              mutableTaps = false;      # Only declarative taps
+              mutableTaps = true;      # Only declarative taps
               autoMigrate = true;       # Automatically migrate existing Homebrew installations
 
               # Add Bitwarden to the list of packages to be installed via Homebrew
@@ -76,30 +81,6 @@
             # Set the system state version
             system.stateVersion = 5;  # Adjust to your NixOS version
           }
-	  {
-	   homebrew = {
-	    enable = true;
-	    global = {
-	      autoUpdate = true;
-	    };
-	    onActivation = {
-	      autoUpdate = true;
-	      upgrade = true;
-	      cleanup = "zap";
-	    };
-            brews = [
-              "libpq"
-              "geos"
-            ];
-	    casks = [
-	      "bitwarden"
-	      "firefox@developer-edition"
-	      "firefox"
-	      "google-chrome"
-	      "dropbox"
-	    ];
-  	  };
-	 }
         ];
       };
     };
