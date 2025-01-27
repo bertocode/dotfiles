@@ -1,26 +1,24 @@
--- Set leader keys early
+-- ~/.config/nvim/init.lua
+
+-- 1. Bootstrap Lazy.nvim
+require("core.bootstrap").setup()
+
+-- 2. Set leader keys
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Load core settings and keymaps
-require('core.options')
-require('core.settings')
-require('core.keymaps')
+-- 3. Load core settings
+require("core.options")
+require("core.keymaps")
 
--- Setup plugin manager and plugins
-require('plugins')
+-- 4. Load enabled modules
+require("modules").load()
 
--- Load environment-specific modules
--- You can control which modules to load based on environment variables or other conditions
--- For example:
--- if vim.fn.getenv("PROJECT") == "ruby" then
---     require('modules.ruby')
--- elseif vim.fn.getenv("PROJECT") == "c" then
---     require('modules.c')
--- end
+-- 5. Initialize plugins
+require("plugins")
 
--- Alternatively, load all and let each module handle its own conditions
-require('modules.c')
-require('modules.ruby')
-require('modules.javascript')
+-- 6. Final settings
+require("core.settings")
 
+-- 7. LSP conniguration
+require("modules.lsp")

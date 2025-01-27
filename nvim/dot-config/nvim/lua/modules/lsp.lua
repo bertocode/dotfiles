@@ -1,84 +1,44 @@
--- ~/.config/nvim/lua/modules/lsp.lua
-
--- LSP Settings
+-- lua/modules/lsp.lua
 local lspconfig = require("lspconfig")
 local mason = require("mason")
 local mason_lspconfig = require("mason-lspconfig")
 local mason_tool_installer = require("mason-tool-installer")
 
--- Capabilities
+-- Base capabilities
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
--- Servers Configuration
+-- Define LSP servers
 local servers = {
-	volar = {
-		filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
-		init_options = {
-			vue = {
-				hybridMode = false,
-			},
-		},
-	},
 	lua_ls = {
 		settings = {
 			Lua = {
-				completion = {
-					callSnippet = "Replace",
-				},
+				completion = { callSnippet = "Replace" },
+				diagnostics = { globals = { "vim" } },
+				workspace = { checkThirdParty = false },
 			},
 		},
 	},
-	ruby_lsp = {
-		settings = {
-			ruby = {
-				lsp = {
-					diagnostics = false,
-					codeActions = false,
-				},
-			},
-		},
-	},
-	ts_ls = {
-		init_options = {
-			plugins = {
-				{
-					name = "@vue/typescript-plugin",
-					location = "/Users/berto/.nvm/versions/node/v20.18.1/lib/@vue/typescript-plugin",
-					languages = { "vue" },
-				},
-			},
-		},
-		filetypes = {
-			"typescript",
-			"javascript",
-			"vue",
-		},
-	},
+	clangd = {}, -- C/C++ LSP
+	-- Add other LSP servers here
 }
 
--- Setup Mason
+-- Mason setup
 mason.setup()
 
 -- Ensure LSP servers are installed
-local ensure_installed = vim.tbl_keys(servers or {})
-vim.list_extend(ensure_installed, {
-	"volar",
-	-- "stylua",
-})
-mason_tool_installer.setup({ ensure_installed = ensure_installed })
-
--- Setup Mason LSP Config
 mason_lspconfig.setup({
-	ensure_installed = ensure_installed,
+	ensure_installed = vim.tbl_keys(servers),
 	automatic_installation = true,
-	handlers = {
-		function(server_name)
-			local server = servers[server_name] or {}
-			server.capabilities = vim.tbl_deep_extend("force", capabilities, server.capabilities or {})
-			lspconfig[server_name].setup(server)
-		end,
-	},
+})
+
+-- Configure LSP servers
+mason_lspconfig.setup_handlers({
+	function(server_name)
+		local server = servers[server_name] or {}
+		server.capabilities = vim.tbl_deep_extend("force", capabilities, server.capabilities or {})
+		lspconfig[server_name].setup(server)
+	end,
 })
 
 -- LSP Attach Autocommands

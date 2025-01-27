@@ -1,20 +1,38 @@
--- ~/.config/nvim/lua/modules/ruby.lua
+local modules = require("modules")
 
--- Example: Ruby-specific settings
+-- Register Ruby plugins
+modules.register_plugins({
+	{
+		"rubocop.nvim",
+		ft = "ruby",
+		config = function()
+			require("rubocop").setup({
+				auto_format = true,
+				use_bundler = true,
+			})
+		end,
+	},
+})
+
+-- Register LSP server
+modules.register_lsp({
+	ruby_lsp = {
+		settings = {
+			ruby = {
+				lsp = { diagnostics = false, codeActions = false },
+			},
+		},
+	},
+})
+
+-- Ruby-specific config
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "ruby",
 	callback = function()
-		-- Ruby-specific settings
 		vim.opt.tabstop = 2
 		vim.opt.shiftwidth = 2
 		vim.opt.expandtab = true
 	end,
 })
 
--- Example: Ruby-specific keybindings
-local keymap = vim.keymap
-keymap.set("n", "<leader>r", ":RubocopAutocorrect<CR>", { desc = "Auto-correct with RuboCop" })
-
--- Example: Ruby-specific plugins (if any)
--- You can conditionally load plugins using Lazy.nvim's `ft` or `cond` options
--- require("lazy").load({ plugins = { "ruby-plugin-name" } })
+vim.keymap.set("n", "<leader>r", ":RubocopAutocorrect<CR>", { desc = "Auto-correct with RuboCop" })

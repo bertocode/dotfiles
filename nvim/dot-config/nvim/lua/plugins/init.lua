@@ -1,4 +1,3 @@
--- Setup Lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -9,12 +8,15 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load plugins
-require("lazy").setup({
-	-- Core Plugins
+-- Load core modules first
+local modules = require("modules")
+
+-- Base plugins that are always loaded
+local base_plugins = {
+	-- Core functionality
 	"tpope/vim-sleuth",
 
-	-- Git Signs
+	-- Git integration
 	{
 		"lewis6991/gitsigns.nvim",
 		opts = {
@@ -22,13 +24,13 @@ require("lazy").setup({
 				add = { text = "+" },
 				change = { text = "~" },
 				delete = { text = "_" },
-				topdelete = { text = "‚Äæ" },
+				topdelete = { text = "?" },
 				changedelete = { text = "~" },
 			},
 		},
 	},
 
-	-- Which-Key
+	-- Keybinding help
 	{
 		"folke/which-key.nvim",
 		event = "VimEnter",
@@ -46,7 +48,7 @@ require("lazy").setup({
 		end,
 	},
 
-	-- Telescope
+	-- File searching
 	{
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
@@ -66,17 +68,11 @@ require("lazy").setup({
 		config = function()
 			require("telescope").setup({
 				defaults = {
-					vimgrep_arguments = {
-						"rg",
-						"--color=never",
-						"--no-heading",
-						"--with-filename",
-						"--line-number",
-						"--column",
-						"--smart-case",
-						"--hidden",
-						"--glob",
-						"!.git/",
+					mappings = {
+						i = {
+							["<C-u>"] = false,
+							["<C-d>"] = false,
+						},
 					},
 				},
 				extensions = {
@@ -85,12 +81,15 @@ require("lazy").setup({
 					},
 				},
 			})
+
+			-- Enable telescope extensions
 			pcall(require("telescope").load_extension, "fzf")
 			pcall(require("telescope").load_extension, "ui-select")
 
-			-- Keybindings for Telescope
+			-- Telescope keymaps
 			local builtin = require("telescope.builtin")
 			local keymap = vim.keymap
+
 			keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 			keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
 			keymap.set("n", "<leader>sf", builtin.find_files, { desc = "[S]earch [F]iles" })
@@ -122,7 +121,7 @@ require("lazy").setup({
 		end,
 	},
 
-	-- LSP Configuration & Plugins
+	-- LSP infrastructure
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
@@ -133,21 +132,16 @@ require("lazy").setup({
 			{
 				"folke/lazydev.nvim",
 				ft = "lua",
-				opts = {
-					library = {
-						{ path = "luvit-meta/library", words = { "vim%.uv" } },
-					},
-				},
+				opts = { library = { { path = "luvit-meta/library", words = { "vim%.uv" } } } },
 			},
 			{ "Bilal2453/luvit-meta", lazy = true },
 		},
 		config = function()
-			-- LSP Configuration (can be moved to a separate module if preferred)
-			require("modules.lsp") -- We'll create this module next
+			require("modules.lsp")
 		end,
 	},
 
-	-- Autoformat
+	-- Formatting
 	{
 		"stevearc/conform.nvim",
 		event = { "BufWritePre" },
@@ -173,9 +167,7 @@ require("lazy").setup({
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
-				ruby = {
-					{ "prettier" },
-				},
+				-- Formatters for other languages added in their modules
 			},
 		},
 	},
@@ -193,21 +185,17 @@ require("lazy").setup({
 					end
 					return "make install_jsregexp"
 				end)(),
-				dependencies = {
-					-- Snippets can be added here if desired
-				},
 			},
 			"saadparwaiz1/cmp_luasnip",
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-path",
 		},
 		config = function()
-			-- Autocompletion Configuration (can be moved to a separate module)
-			require("modules.autocompletion") -- We'll create this module next
+			require("modules.autocompletion")
 		end,
 	},
 
-	-- Colorscheme
+	-- UI
 	{
 		"folke/tokyonight.nvim",
 		priority = 1000,
@@ -217,48 +205,36 @@ require("lazy").setup({
 		end,
 	},
 
-	-- Additional Plugins
+	-- Navigation
 	{
 		"theprimeagen/harpoon",
 		branch = "harpoon2",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		config = function()
 			require("harpoon"):setup()
+			-- Harpoon keymaps
+			vim.keymap.set("n", "<leader>a", function()
+				require("harpoon"):list():add()
+			end, { desc = "Harpoon [A]dd file" })
+			vim.keymap.set("n", "<leader>e", function()
+				require("harpoon").ui:toggle_quick_menu(require("harpoon"):list())
+			end, { desc = "Harpoon [E]xplore" })
+			vim.keymap.set("n", "<leader>1", function()
+				require("harpoon"):list():select(1)
+			end, { desc = "Harpoon [1]" })
+			vim.keymap.set("n", "<leader>2", function()
+				require("harpoon"):list():select(2)
+			end, { desc = "Harpoon [2]" })
+			vim.keymap.set("n", "<leader>3", function()
+				require("harpoon"):list():select(3)
+			end, { desc = "Harpoon [3]" })
+			vim.keymap.set("n", "<leader>4", function()
+				require("harpoon"):list():select(4)
+			end, { desc = "Harpoon [4]" })
 		end,
-		keys = {
-			{
-				"<leader>a",
-				function()
-					require("harpoon"):list():add()
-				end,
-				desc = "Harpoon file",
-			},
-			{
-				"<leader>e",
-				function()
-					local harpoon = require("harpoon")
-					harpoon.ui:toggle_quick_menu(harpoon:list())
-				end,
-				desc = "Harpoon quick menu",
-			},
-			{
-				"<leader>2",
-				function()
-					require("harpoon"):list():next()
-				end,
-				desc = "Harpoon next",
-			},
-			{
-				"<leader>1",
-				function()
-					require("harpoon"):list():prev()
-				end,
-				desc = "Harpoon before",
-			},
-		},
 	},
 
-	-- Todo Comments
+	-- Code analysis
 	{
 		"folke/todo-comments.nvim",
 		event = "VimEnter",
@@ -266,7 +242,6 @@ require("lazy").setup({
 		opts = { signs = false },
 	},
 
-	-- Trouble
 	{
 		"folke/trouble.nvim",
 		opts = {},
@@ -281,17 +256,17 @@ require("lazy").setup({
 		},
 	},
 
-	-- Mini.nvim Collection
+	-- Utilities
 	{
 		"echasnovski/mini.nvim",
 		config = function()
-			-- Mini.ai
+			-- Mini.ai (text objects)
 			require("mini.ai").setup({ n_lines = 500 })
 
-			-- Mini.surround
+			-- Mini.surround (surround text)
 			require("mini.surround").setup()
 
-			-- Mini.statusline
+			-- Mini.statusline (statusline)
 			local statusline = require("mini.statusline")
 			statusline.setup({ use_icons = vim.g.have_nerd_font })
 			statusline.section_location = function()
@@ -300,7 +275,6 @@ require("lazy").setup({
 		end,
 	},
 
-	-- Blame Plugin
 	{
 		"FabijanZulj/blame.nvim",
 		lazy = false,
@@ -308,8 +282,21 @@ require("lazy").setup({
 			require("blame").setup({})
 		end,
 	},
-
-	-- Treesitter
+	{
+		"AdiY00/copy-tree.nvim",
+		cmd = { "CopyTree", "SaveTree" },
+		config = function()
+			require("copy-tree").setup()
+		end,
+		-- Example keymap
+		vim.keymap.set(
+			"n",
+			"<leader>ct",
+			"<cmd>CopyTree<cr>",
+			{ desc = "Copy project structure from current directory" }
+		),
+	},
+	-- Syntax parsing
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
@@ -326,7 +313,6 @@ require("lazy").setup({
 				"markdown",
 				"markdown_inline",
 				"query",
-				"vue",
 				"vim",
 				"vimdoc",
 			},
@@ -341,6 +327,7 @@ require("lazy").setup({
 			require("nvim-treesitter.install").prefer_git = true
 			require("nvim-treesitter.configs").setup(opts)
 
+			-- Set filetype for gitcommit to git_config
 			vim.api.nvim_create_autocmd("FileType", {
 				pattern = "gitcommit",
 				callback = function()
@@ -349,27 +336,28 @@ require("lazy").setup({
 			})
 		end,
 	},
+}
 
-	-- Placeholder for additional plugins
-	-- { import = 'custom.plugins' },
-}, {
+-- Merge base plugins with module-registered plugins
+local all_plugins = vim.list_extend(base_plugins, modules.enabled_plugins or {})
+
+-- Initialize Lazy.nvim
+require("lazy").setup(all_plugins, {
 	ui = {
-		-- If you are using a Nerd Font: set icons to an empty table which will use the
-		-- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
 		icons = vim.g.have_nerd_font and {} or {
-			cmd = "⌘",
-			config = "🛠",
-			event = "📅",
-			ft = "📂",
-			init = "⚙",
-			keys = "🗝",
-			plugin = "🔌",
-			runtime = "💻",
-			require = "🌙",
-			source = "📄",
-			start = "🚀",
-			task = "📌",
-			lazy = "💤 ",
+			cmd = "?",
+			config = "??",
+			event = "??",
+			ft = "??",
+			init = "?",
+			keys = "??",
+			plugin = "??",
+			runtime = "??",
+			require = "??",
+			source = "??",
+			start = "??",
+			task = "??",
+			lazy = "?? ",
 		},
 	},
 })
