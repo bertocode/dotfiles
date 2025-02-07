@@ -2,7 +2,6 @@
 local lspconfig = require("lspconfig")
 local mason = require("mason")
 local mason_lspconfig = require("mason-lspconfig")
-local mason_tool_installer = require("mason-tool-installer")
 
 -- Base capabilities
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -38,6 +37,11 @@ mason_lspconfig.setup_handlers({
 		local server = servers[server_name] or {}
 		server.capabilities = vim.tbl_deep_extend("force", capabilities, server.capabilities or {})
 		lspconfig[server_name].setup(server)
+	end,
+	ruby_lsp = function()
+		require("lspconfig").ruby_lsp.setup({
+			cmd_env = { BUNDLE_GEMFILE = vim.fn.getenv("GLOBAL_GEMFILE") },
+		})
 	end,
 })
 

@@ -1,27 +1,11 @@
 local modules = require("modules")
 
--- Register Ruby plugins
-modules.register_plugins({
-	{
-		"rubocop.nvim",
-		ft = "ruby",
-		config = function()
-			require("rubocop").setup({
-				auto_format = true,
-				use_bundler = true,
-			})
-		end,
-	},
-})
-
 -- Register LSP server
 modules.register_lsp({
 	ruby_lsp = {
-		settings = {
-			ruby = {
-				lsp = { diagnostics = false, codeActions = false },
-			},
-		},
+		mason = false,
+		cmd = { vim.fn.expand("~/.rbenv/shims/ruby-lsp") },
+		filetypes = { "ruby", "eruby" },
 	},
 })
 
