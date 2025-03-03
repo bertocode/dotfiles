@@ -201,6 +201,41 @@ local base_plugins = {
 		end,
 	},
 
+	{
+		"robitx/gp.nvim",
+		config = function()
+			local conf = {
+				providers = {
+					ollama = {
+						endpoint = "http://localhost:11434/v1/chat/completions",
+					},
+				}, -- For customization, refer to Install > Configuration in the Documentation/Readme
+				agents = {
+					{
+						provider = "ollama",
+						name = "ChatDeepSeek",
+						chat = true,
+						command = false,
+						-- string with model name or table with model name and parameters
+						model = {
+							model = "deepseek-r1:8b",
+							temperature = 0.6,
+							top_p = 1,
+							min_p = 0.05,
+						},
+						-- system prompt (use this to specify the persona/role of the AI)
+						system_prompt = "You are a general AI assistant.",
+					},
+				},
+				default_command_agent = "ChatDeepSeek",
+				default_chat_agent = "ChatDeepSeek",
+			}
+			require("gp").setup(conf)
+
+			-- Setup shortcuts here (see Usage > Shortcuts in the Documentation/Readme)
+		end,
+	},
+
 	-- UI
 	{
 		"folke/tokyonight.nvim",
@@ -294,6 +329,82 @@ local base_plugins = {
 			-- or leave it empty to use the default settings
 			-- refer to the configuration section below
 		},
+	},
+	{
+		"3rd/image.nvim",
+		config = function()
+			require("image").setup({
+				backend = "kitty", -- Use Kitty's Graphics Protocol
+				processor = "magick_rock", -- Use Lua rock bindings for ImageMagick; use "magick_cli" if preferred
+				integrations = {
+					markdown = {
+						enabled = true,
+						clear_in_insert_mode = false,
+						download_remote_images = true,
+						only_render_image_at_cursor = false,
+						floating_windows = false, -- set true to render images in floating markdown windows
+						filetypes = { "markdown", "vimwiki" },
+					},
+					neorg = {
+						enabled = true,
+						filetypes = { "norg" },
+					},
+					typst = {
+						enabled = true,
+						filetypes = { "typst" },
+					},
+					html = { enabled = false },
+					css = { enabled = false },
+				},
+				max_width = nil,
+				max_height = nil,
+				max_width_window_percentage = nil,
+				max_height_window_percentage = 50,
+				window_overlap_clear_enabled = false, -- toggles images when windows overlap
+				window_overlap_clear_ft_ignore = {
+					"cmp_menu",
+					"cmp_docs",
+					"snacks_notif",
+					"scrollview",
+					"scrollview_sign",
+				},
+				editor_only_render_when_focused = false, -- automatically show/hide images on editor focus change
+				tmux_show_only_in_active_window = false, -- for tmux users; set to true if desired
+				hijack_file_patterns = { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.avif" },
+			})
+		end,
+	},
+	{
+		"3rd/diagram.nvim",
+		dependencies = { "3rd/image.nvim" },
+		config = function()
+			require("diagram").setup({
+				integrations = {
+					require("diagram.integrations.markdown"),
+					require("diagram.integrations.neorg"),
+				},
+				renderer_options = {
+					mermaid = {
+						theme = "dark",
+						background = "dark",
+						scale = 2,
+						width = 500,
+						height = 500,
+					},
+					plantuml = {
+						charset = "utf-8",
+					},
+					d2 = {
+						theme_id = 1,
+					},
+					gnuplot = {
+						theme = "dark",
+						size = "800,600",
+						font = nil,
+					},
+				},
+			})
+		end,
 	},
 	{
 		"epwalsh/obsidian.nvim",
